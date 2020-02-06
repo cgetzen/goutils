@@ -26,7 +26,8 @@ import (
 )
 
 // RANDOM provides the time-based seed used to generate random numbers
-var RANDOM = rand.New(rand.NewSource(time.Now().UnixNano()))
+// var RANDOM = rand.New(rand.NewSource(time.Now().UnixNano()))
+var RANDOM = time.Now().UnixNano()
 
 /*
 RandomNonAlphaNumeric creates a random string whose length is the number of characters specified.
@@ -41,6 +42,10 @@ Returns:
 */
 func RandomNonAlphaNumeric(count int) (string, error) {
 	return RandomAlphaNumericCustom(count, false, false)
+}
+
+func RandomNonAlphaNumericSeed(count int, seed int64) (string, error) {
+	return RandomAlphaNumericCustomSeed(count, false, false, seed)
 }
 
 /*
@@ -58,6 +63,10 @@ func RandomAscii(count int) (string, error) {
 	return Random(count, 32, 127, false, false)
 }
 
+func RandomAsciiSeed(count int, seed int64) (string, error) {
+	return Random(count, 32, 127, false, false, seed)
+}
+
 /*
 RandomNumeric creates a random string whose length is the number of characters specified.
 Characters will be chosen from the set of numeric characters.
@@ -71,6 +80,10 @@ Returns:
 */
 func RandomNumeric(count int) (string, error) {
 	return Random(count, 0, 0, false, true)
+}
+
+func RandomNumericSeed(count int, seed int64) (string, error) {
+	return Random(count, 0, 0, false, true, seed)
 }
 
 /*
@@ -89,6 +102,11 @@ Returns:
 func RandomAlphabetic(count int) (string, error) {
 	return Random(count, 0, 0, true, false)
 }
+
+func RandomAlphabeticSeed(count int, seed int64) (string, error) {
+	return Random(count, 0, 0, true, false, seed)
+}
+// TODO
 
 /*
 RandomAlphaNumeric creates a random string whose length is the number of characters specified.
@@ -139,6 +157,10 @@ func RandomAlphaNumericCustom(count int, letters bool, numbers bool) (string, er
 	return Random(count, 0, 0, letters, numbers)
 }
 
+func RandomAlphaNumericCustomSeed(count int, letters bool, numbers bool, seed int64) (string, error) {
+	return Random(count, 0, 0, letters, numbers, seed)
+}
+
 /*
 Random creates a random string based on a variety of options, using default source of randomness.
 This method has exactly the same semantics as RandomSeed(int, int, int, bool, bool, []char, *rand.Rand), but
@@ -157,7 +179,7 @@ Returns:
 	error - an error stemming from an invalid parameter within underlying function, RandomSeed(...)
 */
 func Random(count int, start int, end int, letters bool, numbers bool, chars ...rune) (string, error) {
-	return RandomSeed(count, start, end, letters, numbers, chars, RANDOM)
+	return RandomSeed(count, start, end, letters, numbers, RANDOM, chars)
 }
 
 /*
@@ -181,8 +203,8 @@ Returns:
 	string - the random string
 	error - an error stemming from invalid parameters: if count < 0; or the provided chars array is empty; or end <= start; or end > len(chars)
 */
-func RandomSeed(count int, start int, end int, letters bool, numbers bool, chars []rune, random *rand.Rand) (string, error) {
-
+func RandomSeed(count int, start int, end int, letters bool, numbers bool, seed int64, chars ...rune) (string, error) {
+	random := rand.New(rand.NewSource(seed))
 	if count == 0 {
 		return "", nil
 	} else if count < 0 {
